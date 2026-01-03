@@ -2,6 +2,68 @@
 
 Welcome to the Distributed File System (DFS) project implemented in Go! This project aims to provide a robust, scalable, and fault-tolerant file storage system using Go programming language.
 
+## File Structure
+
+```
+dfs/
+├── cmd/
+│   ├── metadata/
+│   │   └── main.go          # Metadata server entrypoint
+│   ├── datanode/
+│   │   └── main.go          # DataNode entrypoint
+│   └── client/
+│       └── main.go          # CLI client (upload/download)
+│
+├── internal/
+│   ├── metadata/
+│   │   ├── server.go        # gRPC handlers
+│   │   ├── registry.go      # node registry & heartbeats
+│   │   ├── placement.go     # chunk placement logic
+│   │   └── state.go         # in-memory metadata state
+│   │
+│   ├── datanode/
+│   │   ├── server.go        # gRPC handlers
+│   │   ├── storage.go       # disk I/O
+│   │   └── heartbeat.go     # heartbeat sender
+│   │
+│   ├── client/
+│   │   ├── upload.go        # upload logic
+│   │   ├── download.go      # download logic
+│   │   └── chunker.go       # file chunking
+│   │
+│   ├── transport/
+│   │   └── grpc.go          # shared gRPC helpers
+│   │
+│   ├── common/
+│   │   ├── config.go        # config loading
+│   │   ├── hashing.go       # chunk ID hashing
+│   │   └── constants.go     # chunk size, replication factor
+│   │
+│   └── proto/
+│       ├── dfs.proto
+│       ├── dfs.pb.go
+│       └── dfs_grpc.pb.go
+│
+├── configs/
+│   ├── metadata.yaml
+│   ├── datanode.yaml
+│   └── client.yaml
+│
+├── scripts/
+│   ├── start_cluster.sh
+│   └── stop_cluster.sh
+│
+├── data/
+│   ├── datanode1/
+│   ├── datanode2/
+│   └── datanode3/
+│
+├── go.mod
+├── go.sum
+└── README.md
+
+```
+
 ## Features
 
 - **Scalability:** Easily scale out by adding more nodes.
