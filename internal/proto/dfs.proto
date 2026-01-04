@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package dfs;
+
+option go_package = "DFS_GO/internal/proto;proto";
+
+service MetadataService {
+    rpc RegisterNode(NodeInfo) returns (Ack);
+    rpc CreateFile(FileRequest) returns (FileMetadata);
+    rpc GetFile(FileRequest) returns (FileMetadata);
+    rpc AllocateChunk(AllocateChunkRequest) returns (ChunkMetadata);
+    rpc Heartbeat(NodeHeartbeat) returns (Ack);
+}
+
+service DataNodeService {
+    rpc StoreChunk(Chunk) returns (Ack);
+    rpc GetChunk(ChunkRequest) returns (Chunk);
+}
+
+message NodeHeartbeat {
+    string node_id = 1;
+}
+
+message NodeInfo {
+    string node_id = 1;
+    string address = 2;
+}
+
+message FileRequest {
+    string filename = 1;
+}
+
+message Chunk {
+    string chunk_id = 1;
+    bytes data = 2;
+}
+
+message ChunkRequest {
+    string chunk_id = 1;
+}
+
+message AllocateChunkRequest {
+    string chunk_id = 1;
+    string filename = 2;
+    int32 chunk_index = 3;
+}
+
+message FileMetadata {
+    string filename = 1;
+    repeated ChunkMetadata chunks = 2;
+}
+
+message ChunkMetadata {
+    string chunk_id = 1;
+    repeated string nodes = 2;
+}
+
+message Ack {
+    bool ok = 1;
+}
