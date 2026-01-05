@@ -1,9 +1,11 @@
 package main
 
 import (
+	"DFS_GO/internal/common"
 	"DFS_GO/internal/datanode"
 	pb "DFS_GO/internal/proto"
 	"context"
+	"flag"
 	"log"
 	"net"
 
@@ -12,25 +14,42 @@ import (
 )
 
 func main() {
-	lis, err := net.Listen("tcp", ":6001")
+	// Parse command line flags
+	configPath := flag.String("config", "config/datanode.yaml", "path to config file")
+	flag.Parse()
+
+	// Load configuration
+	cfg, err := common.LoadDataNodeConfig(*configPath)
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	// Use config values
+	lis, err := net.Listen("tcp", cfg.Address)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	log.Println("DataNode listens to port 6001")
+	log.Printf("DataNode %s listening on %s", cfg.NodeID, cfg.Address)
 
-	// Increase max message size to 16MB for large chunks
+	// Calculate max message size from config (convert MB to bytes)
+	maxMsgSize := cfg.GRPC.MaxMsgMB * 1024 * 1024
+	if maxMsgSize == 0 {
+		maxMsgSize = 16 * 1024 * 1024 // default 16MB
+	}
+
 	grpcServer := grpc.NewServer(
-		grpc.MaxRecvMsgSize(16*1024*1024),
-		grpc.MaxSendMsgSize(16*1024*1024),
+		grpc.MaxRecvMsgSize(maxMsgSize),
+		grpc.MaxSendMsgSize(maxMsgSize),
 	)
 
 	pb.RegisterDataNodeServiceServer(
 		grpcServer,
-		&datanode.Server{DataDir: "./data/dn1"},
+		&datanode.Server{DataDir: cfg.DataDir},
 	)
 
-	conn, err := grpc.Dial("localhost:5000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Connect to metadata server
+	conn, err := grpc.Dial(cfg.MetadataAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to metadata server: %v", err)
 	}
@@ -38,18 +57,25 @@ func main() {
 
 	client := pb.NewMetadataServiceClient(conn)
 
+	// Register this node with metadata server
+	// Build full address for registration (include host if needed)
+	nodeAddress := cfg.Address
+	if nodeAddress[0] == ':' {
+		nodeAddress = "localhost" + nodeAddress
+	}
+
 	_, err = client.RegisterNode(context.Background(), &pb.NodeInfo{
-		NodeId:  "dn1",
-		Address: "localhost:6001",
+		NodeId:  cfg.NodeID,
+		Address: nodeAddress,
 	})
 	if err != nil {
 		log.Fatalf("Failed to register node: %v", err)
 	}
 
-	log.Println("DataNode registered with metadata server")
+	log.Printf("DataNode %s registered with metadata server at %s", cfg.NodeID, cfg.MetadataAddress)
 
 	// Start heartbeat loop
-	datanode.StartHeartbeat("dn1", client)
+	datanode.StartHeartbeat(cfg.NodeID, client)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Storage Server Error: %v", err)

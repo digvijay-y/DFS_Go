@@ -1,0 +1,4 @@
+{"type":"REGISTER_NODE","data":{"node_id":"dn1","address":"localhost:6001"}}
+{"type":"ALLOCATE_CHUNK","data":{"Filename":"wal_test.txt","ChunkIndex":0,"ChunkId":"47e27f06698bbf0057754b19984cb5a25b7baf0ce7ff33383934b692d13048c6","Nodes":["localhost:6001"]}}
+{"type":"ALLOCATE_CHUNK","data":{"Filename":"parallel_3.bin","ChunkIndex":0,"ChunkId":"d2fad139418acad38e5ace1cd3d3ded79535501237792dd76f21d6ba73e23f55","Nodes":["localhost:6001"]}}
+{"type":"ALLOCATE_CHUNK","data":{"Filename":"parallel_3.bin","ChunkIndex":1,"ChunkId":"db0e07f89324d9adb482c53f73ac3062c6d63bdcf3c6e910f2eb69562f77a28f","Nodes":["localhost:6001"]}}

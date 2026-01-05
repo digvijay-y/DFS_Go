@@ -1,0 +1,7 @@
+metadata_address: "localhost:5000"
+
+timeouts:
+  rpc_seconds: 5
+
+concurrency:
+  upload_workers: 4

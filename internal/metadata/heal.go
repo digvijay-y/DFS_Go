@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"DFS_GO/internal/common"
+	"encoding/json"
 	"time"
 )
 
@@ -67,6 +68,27 @@ func (s *Server) replicateChunk(
 	// re-validate chunk still needs replication
 	chunk := s.State.Files[filename][chunkIndex]
 	if len(chunk.Nodes) >= common.ReplicationFactor {
+		return
+	}
+
+	payload, err := json.Marshal(struct {
+		Filename   string
+		ChunkIndex int
+		Node       string
+	}{
+		Filename:   filename,
+		ChunkIndex: chunkIndex,
+		Node:       target,
+	})
+	if err != nil {
+		return
+	}
+
+	err = s.WAL.Append(WALEntry{
+		Type: "ADD_REPLICA",
+		Data: payload,
+	})
+	if err != nil {
 		return
 	}
 

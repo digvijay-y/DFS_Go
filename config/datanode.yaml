@@ -1,0 +1,12 @@
+node_id: "dn1"
+address: ":6001"
+
+data_dir: "./data/dn1"
+
+metadata_address: "localhost:5000"
+
+heartbeat:
+  interval_seconds: 3
+
+grpc:
+  max_msg_mb: 16

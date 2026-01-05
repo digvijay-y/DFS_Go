@@ -1,0 +1,15 @@
+address: ":5000"
+
+replication_factor: 3
+
+heartbeat:
+  ttl_seconds: 10
+  cleanup_interval_seconds: 5
+
+wal:
+  path: "metadata.wal"
+
+snapshot:
+  path: "metadata.snapshot"
+  interval_seconds: 30
+  
